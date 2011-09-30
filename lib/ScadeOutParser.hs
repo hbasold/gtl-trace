@@ -1,9 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module ScadeOutParser where
+module ScadeOutParser (
+  StepData(..),
+  Steps,
+  parseScadeOutput
+) where
 
 import Text.ParserCombinators.UU as UU hiding (Steps)
-import Text.ParserCombinators.UU.Utils as UU (pLetter, pDigit, lexeme, pSymbol, pNatural, pSpaces)
+import Text.ParserCombinators.UU.Utils as UU (pLetter, pDigit, lexeme, pSymbol, pNatural, pSpaces, runParser)
 import Text.ParserCombinators.UU.BasicInstances as UU (Parser, pSym)
 
 import Data.List (intercalate)
@@ -97,14 +101,12 @@ transition = (\t s n a -> if a then Just (s, n, t) else Nothing) <$>
       -- <|> const Weak <$> pSymbol "WEAK"
     transNumber = pPacked (pSym '<') (pSym '>') pNatural
 
-data StepDataEntry = Inp Input | Outp Output | St State | Tr Transition
-putEntry (Just e) = putEntry' e
-  where
-    putEntry' (Inp x) d = d { stepInputs = x : stepInputs d }
-    putEntry' (Outp x) d = d { stepOutputs = x : stepOutputs d }
-    putEntry' (St x) d = d { stepStates = x : stepStates d }
-    putEntry' (Tr x) d = d { stepTransitions = x : stepTransitions d }
-putEntry Nothing = id
+data StepDataEntry = Inp Input | Outp Output | St State | Tr Transition | NoEntry
+putEntry (Inp x) d = d { stepInputs = x : stepInputs d }
+putEntry (Outp x) d = d { stepOutputs = x : stepOutputs d }
+putEntry (St x) d = d { stepStates = x : stepStates d }
+putEntry (Tr x) d = d { stepTransitions = x : stepTransitions d }
+putEntry NoEntry d = d
 
 step :: Parser StepData
 step = pSymbol "STEP" *> pNatural *> stepContent
@@ -112,12 +114,15 @@ step = pSymbol "STEP" *> pNatural *> stepContent
     stepContent :: Parser StepData
     stepContent = pFoldr (putEntry, StepData [] [] [] []) stepEntry
 
-    stepEntry :: Parser (Maybe StepDataEntry)
+    stepEntry :: Parser StepDataEntry
     stepEntry =
-      (Just . Inp <$> input)
-      <|> (Just . Outp <$> output)
-      <|> (fmap St <$> state)
-      <|> (fmap Tr <$> transition)
+      (Inp <$> input)
+      <|> (Outp <$> output)
+      <|> (maybe NoEntry St <$> state)
+      <|> (maybe NoEntry Tr <$> transition)
 
 steps :: Parser Steps
 steps = pList step
+
+parseScadeOutput :: String -> Steps
+parseScadeOutput = runParser "scade output" steps
