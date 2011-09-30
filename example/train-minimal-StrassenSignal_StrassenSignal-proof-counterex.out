@@ -1,0 +1,120 @@
+STEP 1
+INPUT StrassenSignal_StrassenSignal_proof/Kommando = StrasseInit
+INPUT StrassenSignal_StrassenSignal_proof/ServiceSchnittstelleStrassenSignal = false
+INPUT StrassenSignal_StrassenSignal_proof/ZustandUeberwachungssignal = UeberwachungTestOB
+INPUT StrassenSignal_StrassenSignal_proof/Gestoert = false
+INPUT StrassenSignal_StrassenSignal_proof/GestoertTest = false
+OUTPUT StrassenSignal_StrassenSignal_proof/test_result = true
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<2>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2: = <Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<2>: = <Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:fail: = <Not Active>
+
+STEP 2
+INPUT StrassenSignal_StrassenSignal_proof/Kommando = StrasseSichern
+INPUT StrassenSignal_StrassenSignal_proof/ServiceSchnittstelleStrassenSignal = false
+INPUT StrassenSignal_StrassenSignal_proof/ZustandUeberwachungssignal = UeberwachungTestOB
+INPUT StrassenSignal_StrassenSignal_proof/Gestoert = false
+INPUT StrassenSignal_StrassenSignal_proof/GestoertTest = false
+OUTPUT StrassenSignal_StrassenSignal_proof/test_result = true
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<2>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1: = <Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<1>: = <Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:fail: = <Not Active>
+
+STEP 3
+INPUT StrassenSignal_StrassenSignal_proof/Kommando = StrasseTest
+INPUT StrassenSignal_StrassenSignal_proof/ServiceSchnittstelleStrassenSignal = false
+INPUT StrassenSignal_StrassenSignal_proof/ZustandUeberwachungssignal = UeberwachungTestOB
+INPUT StrassenSignal_StrassenSignal_proof/Gestoert = false
+INPUT StrassenSignal_StrassenSignal_proof/GestoertTest = true
+OUTPUT StrassenSignal_StrassenSignal_proof/test_result = true
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<2>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1: = <Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<1>: = <Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:fail: = <Not Active>
+
+STEP 4
+INPUT StrassenSignal_StrassenSignal_proof/Kommando = StrasseEntsichern
+INPUT StrassenSignal_StrassenSignal_proof/ServiceSchnittstelleStrassenSignal = false
+INPUT StrassenSignal_StrassenSignal_proof/ZustandUeberwachungssignal = UeberwachungTestOB
+INPUT StrassenSignal_StrassenSignal_proof/Gestoert = true
+INPUT StrassenSignal_StrassenSignal_proof/GestoertTest = true
+OUTPUT StrassenSignal_StrassenSignal_proof/test_result = true
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<2>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1: = <Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<1>: = <Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:fail: = <Not Active>
+
+STEP 5
+INPUT StrassenSignal_StrassenSignal_proof/Kommando = StrasseTest
+INPUT StrassenSignal_StrassenSignal_proof/ServiceSchnittstelleStrassenSignal = false
+INPUT StrassenSignal_StrassenSignal_proof/ZustandUeberwachungssignal = UeberwachungAn
+INPUT StrassenSignal_StrassenSignal_proof/Gestoert = true
+INPUT StrassenSignal_StrassenSignal_proof/GestoertTest = true
+OUTPUT StrassenSignal_StrassenSignal_proof/test_result = true
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<2>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1: = <Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<1>: = <Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:fail: = <Not Active>
+
+STEP 6
+INPUT StrassenSignal_StrassenSignal_proof/Kommando = StrasseTest
+INPUT StrassenSignal_StrassenSignal_proof/ServiceSchnittstelleStrassenSignal = false
+INPUT StrassenSignal_StrassenSignal_proof/ZustandUeberwachungssignal = UeberwachungAn
+INPUT StrassenSignal_StrassenSignal_proof/Gestoert = true
+INPUT StrassenSignal_StrassenSignal_proof/GestoertTest = true
+OUTPUT StrassenSignal_StrassenSignal_proof/test_result = false
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st0:<2>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st1:<3>: = <Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2: = <Not Active>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<1>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<2>: = <Not Fired>
+STRONG TRANSITION StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:st2:<3>: = <Not Fired>
+STATE StrassenSignal_StrassenSignal_proof/StrassenSignal_StrassenSignal_testnode/:fail: = <Active>
+
