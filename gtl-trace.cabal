@@ -8,12 +8,14 @@ Description:
   Support tool for gtl. Generates visualisations of error traces.
 
 Library
-  Build-Depends: base,array,containers
+  default-language: Haskell2010
+  Build-Depends: base,array,containers,uu-parsinglib
   Hs-Source-Dirs: lib
   GHC-Options: -fwarn-unused-imports
   Exposed-Modules:
     ScadeOutParser
 
 Executable gtl-trace
+  default-language: Haskell2010
   Build-Depends: base,gtl-trace
   Main-Is: Main.hs
