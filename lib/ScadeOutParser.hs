@@ -3,12 +3,14 @@
 module ScadeOutParser (
   StepData(..),
   Steps,
-  parseScadeOutput
+  parseScadeOutput,
+  parseScadeOutputStep
 ) where
 
 import Text.ParserCombinators.UU as UU hiding (Steps)
 import Text.ParserCombinators.UU.Utils as UU (pLetter, pDigit, lexeme, pSymbol, pNatural, pSpaces, runParser)
 import Text.ParserCombinators.UU.BasicInstances as UU (Parser, pSym)
+import Text.ParserCombinators.UU.Demo.Examples (run)
 
 import Data.List (intercalate)
 
@@ -123,6 +125,9 @@ step = pSymbol "STEP" *> pNatural *> stepContent
 
 steps :: Parser Steps
 steps = pList step
+
+--parseScadeOutputStep = runParser "scade output step" step
+parseScadeOutputStep = run step
 
 parseScadeOutput :: String -> Steps
 parseScadeOutput = runParser "scade output" steps
