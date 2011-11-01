@@ -1,37 +1,45 @@
 import ScadeStateGraph
+import ScadeOutParser as STrace
+
 import Language.Scade.Parser
 import Language.Scade.Lexer
 import Language.Scade.Syntax
 
 import Data.GraphViz.Types.Graph
---import qualified Data.GraphViz.Types.Canonical as Canonical
 import Data.GraphViz
 import Data.GraphViz.Printing
 import Data.GraphViz.Types
+import Data.GraphViz.Attributes.Complete
+
+import qualified Data.Graph.Inductive.Graph as Gr
 
 --import Data.Map as Map hiding (map)
 
 import Data.Text.Lazy.IO as LText (writeFile)
+import Control.Monad
 
-{-
--- original version reverses edges, don't know why
-toCanonical :: DotGraph -> Canonical.DotGraph
-toCanonical g = Canonical.DotGraph False True (graphId g) (Canonical.DotStmts [] [] nodes edges)
+renderParams :: StateGraph -> Int -> StepData -> GraphvizParams Gr.Node NodeLabel EdgeLabel String NodeLabel
+renderParams g i step = defaultParams {
+    globalAttributes = (GraphAttrs [RankDir FromLeft]) : globalAttributes nonClusteredParams
+    , clusterBy = \(n,nl) -> C ("Step " ++ show i) $ N (n,nl)
+    , fmtNode = \(_,(n,_)) -> highlightNode n ++ [toLabel n]
+    , fmtEdge = \(f,_,(t,expr)) -> highlightTransition f t ++ [toLabel expr] }
   where
-    vs = values g
-    nodes = map (\(n,i) -> Canonical.DotNode n (_attributes i)) $ Map.toAscList vs
--}
+    -- TODO: respect path
+    highlightNode n = if any (\(_,n') -> n == n') $ stepStates step then [color Blue] else []
+    highlightTransition f t = if any (\((_,s), i, _) -> (maybe False (s ==) (fmap fst $ Gr.lab g f)) && t == i) $ stepTransitions step then [color Blue] else []
 
 main = do
   str <- readFile "train-minimal-StrassenSignal_StrassenSignal.scade"
   let decls = scade $ alexScanTokens str
   let (UserOpDecl _ _ _ opName _ _ _ _ opCont) = head decls
   let stateGraph = makeStateGraph opName opCont
-  let dotParams = nonClusteredParams { fmtNode = snd, fmtEdge = \(_,_,attrs) -> attrs }
+  stepsStr <- readFile "train-minimal-StrassenSignal_StrassenSignal-proof-counterex.out"
+  let steps = parseScadeOutput stepsStr
   case stateGraph of
-    Just sg -> do
-      -- print $ edgeInformation False sg
-      -- print $ toCanonical sg
-      let dot = toDot $ graphToDot dotParams sg
-      LText.writeFile "train-minimal-StrassenSignal_StrassenSignal.dot" $ renderDot dot
+    Just sg -> foldM_ (\ i step -> do
+      let dotParams = renderParams sg i step
+      void $ runGraphviz (graphToDot dotParams sg) Svg ("train-minimal-StrassenSignal_StrassenSignal-" ++ show i ++ ".svg")
+      return (i+1))
+      1 steps
     Nothing -> print "No automaton found"
