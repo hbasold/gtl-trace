@@ -3,6 +3,7 @@
 module StateNameRecovery where
 
 import Data.Map as Map
+import Data.Set as Set
 
 import Text.ParserCombinators.UU as UU hiding (Steps)
 import Text.ParserCombinators.UU.Utils as UU (pSymbol, pParens, pBraces, pComma, lexeme, pParentheticalString, runParser)
@@ -44,7 +45,15 @@ mergeHistory :: Map String String -> AutomatonHistory -> Map String String
 mergeHistory m NoHistory = m
 mergeHistory m (Rename m' h) = mergeHistory updateMap h
   where
-    updateMap = Map.foldlWithKey (\m s s' -> Map.alter (const $ Just s') s m) m m'
-mergeHistory m (Minimize h) = mergeHistory m h
-mergeHistory m (Power h) = mergeHistory m h
+    updateMap = Map.foldlWithKey (\mu s s' -> maybe mu (\x -> Map.adjust (const x) s mu) (Map.lookup s' m')) m m
+    -- maybe we have to insert all unused mappings too?
+
+mergeHistory m (Minimize h) = mergeHistory m h -- TODO: possibly combines states into one set state -> parsing required
+mergeHistory m (Power h) = mergeHistory m h -- TODO: possibly is in several states simultaniously -> parsing required
+
+-- TODO: we need more structure here:
+data State =
+  Simple String
+  | ProductState State State
+  | SetState (Set State)
 

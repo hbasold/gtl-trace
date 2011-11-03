@@ -42,7 +42,7 @@ main = do
   nameMapStr <- readFile "train-minimalStrassenSignal_StrassenSignal-statemap.txt"
   let h = parseStateHistory nameMapStr
   print h
-  print $ mergeHistory (Map.empty) h
+  print $ mergeHistory (Map.fromList [("st0","0"), ("st1", "1")]) h
   case stateGraph of
     Just sg -> foldM_ (\ i step -> do
       let dotParams = renderParams sg i step
