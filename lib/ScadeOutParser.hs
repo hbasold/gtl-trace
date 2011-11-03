@@ -1,16 +1,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module ScadeOutParser (
-  StepData(..),
-  Steps,
-  parseScadeOutput,
-  parseScadeOutputStep
+  StepData(..)
+  , Steps
+  , parseScadeOutput
+  --, parseScadeOutputStep
 ) where
 
 import Text.ParserCombinators.UU as UU hiding (Steps)
-import Text.ParserCombinators.UU.Utils as UU (pLetter, pDigit, lexeme, pSymbol, pNatural, pSpaces, runParser)
-import Text.ParserCombinators.UU.BasicInstances as UU (Parser, pSym)
-import Text.ParserCombinators.UU.Demo.Examples (run)
+import Text.ParserCombinators.UU.Utils as UU (pLetter, pDigit, lexeme, pSymbol, pNatural, pSpaces, runParser) --, execParser)
+import Text.ParserCombinators.UU.BasicInstances as UU (Parser, pSym) --, LineColPos(..), createStr, Error)
+-- import Text.ParserCombinators.UU.Demo.Examples (run)
 
 import Data.List (intercalate)
 
@@ -126,8 +126,10 @@ step = pSymbol "STEP" *> pNatural *> stepContent
 steps :: Parser Steps
 steps = pList step
 
---parseScadeOutputStep = runParser "scade output step" step
-parseScadeOutputStep = run step
+-- parseScadeOutputStep :: String -> (StepData, [Error LineColPos])
+-- parseScadeOutputStep = parse ((,) <$> step <*> pEnd) . createStr (LineColPos 0 0 0)
+-- parseScadeOutputStep = runParser "scade output step" step
+-- parseScadeOutputStep = run step
 
 parseScadeOutput :: String -> Steps
 parseScadeOutput = runParser "scade output" steps
