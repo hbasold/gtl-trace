@@ -4,12 +4,15 @@ import ScadeOutParser as STrace
 import Language.Scade.Parser
 import Language.Scade.Lexer
 import Language.Scade.Syntax
+import StateNameRecovery
 
 import Data.GraphViz.Types.Graph
 import Data.GraphViz
 import Data.GraphViz.Printing
 import Data.GraphViz.Types
 import Data.GraphViz.Attributes.Complete
+
+import Data.Map as Map
 
 import qualified Data.Graph.Inductive.Graph as Gr
 
@@ -36,6 +39,10 @@ main = do
   let stateGraph = makeStateGraph opName opCont
   stepsStr <- readFile "train-minimal-StrassenSignal_StrassenSignal-proof-counterex.out"
   let steps = parseScadeOutput stepsStr
+  nameMapStr <- readFile "train-minimalStrassenSignal_StrassenSignal-statemap.txt"
+  let h = parseStateHistory nameMapStr
+  print h
+  print $ mergeHistory (Map.empty) h
   case stateGraph of
     Just sg -> foldM_ (\ i step -> do
       let dotParams = renderParams sg i step
