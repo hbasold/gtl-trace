@@ -2,30 +2,25 @@ module ScadeStateGraph (NodeLabel, EdgeLabel, StateGraph, makeStateGraph) where
 
 import Language.Scade.Syntax
 import Language.Scade.Pretty (prettyExpr)
--- import Data.GraphViz.Types.Graph as DotGr
 import Data.Graph.Inductive.Graph as Gr
 import Data.Graph.Inductive.PatriciaTree
--- import Data.GraphViz.Attributes (Attributes, toLabel, style, bold)
--- import Data.Text.Lazy as LText ()
--- import Data.Text.Lazy.Builder (toLazyText, fromString)
--- import Data.Set as Set hiding (map)
 import Data.Map as Map hiding (map, union)
 
 type NodeLabel = (String,Bool)
 type EdgeLabel = (Int,String)
 type StateGraph = Gr NodeLabel EdgeLabel
 
-makeStateGraph :: String -> DataDef -> Maybe StateGraph
+makeStateGraph :: String -> DataDef -> Maybe (StateGraph, Map String Node)
 makeStateGraph name def =
   let e:[] = dataEquations def
   in case e of
     StateEquation m _ _ -> Just $ stateGraph m
     _ -> Nothing
 
-stateGraph :: StateMachine -> StateGraph
+stateGraph :: StateMachine -> (StateGraph, Map String Node)
 stateGraph (StateMachine name states) =
   let cluster = undefined -- fmap (DotGr.Str . toLazyText . fromString) name
-  in fst $ foldl makeContext (Gr.empty, Map.empty) states
+  in foldl makeContext (Gr.empty, Map.empty) states
   where
     makeContext :: (StateGraph, Map String Node) -> State -> (StateGraph, Map String Node)
     makeContext (g,sm) s =
