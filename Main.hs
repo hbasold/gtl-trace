@@ -18,6 +18,9 @@ import Control.Arrow (first,second)
 
 import Control.Monad (foldM_, void)
 
+import System.Environment (getArgs)
+import System.FilePath (dropExtension, addExtension)
+
 idMap :: [Integer] -> StateStructureMap
 idMap = Map.fromList . (map duplicate)
   where duplicate x = (x, Simple $ NatLab x)
@@ -54,22 +57,24 @@ renderParams op m g i step = defaultParams {
 
 main :: IO ()
 main = do
-  str <- readFile "train-minimal-StrassenSignal_StrassenSignal.scade"
+  (gtlFile:_) <- getArgs
+  let file = dropExtension gtlFile
+  str <- readFile $ addExtension file ".scade"
   let decls = scade $ alexScanTokens str
   let (UserOpDecl _ _ _ opName _ _ _ _ opCont) = head decls
   let stateGraph = makeStateGraph opCont
-  stepsStr <- readFile "train-minimal-StrassenSignal_StrassenSignal-proof-counterex.out"
+  stepsStr <- readFile $ file ++ "-proof-counterex.out"
   let steps = relabelSteps $ parseScadeOutput stepsStr
-  nameMapStr <- readFile "train-minimalStrassenSignal_StrassenSignal-statemap.txt"
+  nameMapStr <- readFile $ file ++ "-statemap.txt"
   let sMap = parseStateStructureMap (Map.insert (-1) (Simple $ StrLab "fail") $ idMap [0,1,2]) nameMapStr
   case stateGraph of
     Just (sg,_) ->
       let sgi = relabelGraph sg
-      in renderAll opName sMap sgi steps
+      in renderAll file opName sMap sgi steps
     Nothing -> print "No automaton found"
   where
-    renderAll op sMap sg = foldM_ (\ i step -> do
+    renderAll file op sMap sg = foldM_ (\ i step -> do
       let dotParams = renderParams op sMap sg i step
-      void $ runGraphviz (graphToDot dotParams sg) Svg ("train-minimal-StrassenSignal_StrassenSignal-" ++ show i ++ ".svg")
+      void $ runGraphviz (graphToDot dotParams sg) Svg (file ++ show i ++ ".svg")
       return (i+1))
       1
