@@ -1,9 +1,14 @@
-module ScadeStateGraph (NodeLabel, EdgeLabel, StateGraph, makeStateGraph) where
+module ScadeStateGraph (
+  NodeLabel
+  , EdgeLabel
+  , StateGraph
+  , makeStateGraph
+) where
 
 import Language.Scade.Syntax
 import Language.Scade.Pretty (prettyExpr)
-import Data.Graph.Inductive.Graph as Gr
-import Data.Graph.Inductive.PatriciaTree
+import Data.Graph.Inductive.Graph as Gr (Node, empty, newNodes, insNode, insEdge, match, (&))
+import Data.Graph.Inductive.PatriciaTree (Gr)
 import Data.Map as Map hiding (map, union)
 
 type NodeLabel = (String,Bool)

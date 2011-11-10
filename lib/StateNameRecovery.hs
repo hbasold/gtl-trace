@@ -1,11 +1,16 @@
 {-# LANGUAGE FlexibleContexts, Rank2Types, ScopedTypeVariables #-}
 
-module StateNameRecovery where
+module StateNameRecovery (
+  StateName (..)
+  , State (..)
+  , StateStructureMap
+  , parseStateStructureMap
+) where
 
 import Prelude hiding (foldl)
 import qualified Data.Map as Map (map)
 import Data.Map as Map hiding (null, map)
-import qualified Data.Set as Set
+import qualified Data.Set as Set (Set(..), toAscList, fromList, map)
 import Data.Foldable (foldl)
 
 import Text.ParserCombinators.UU as UU hiding (Steps)
@@ -83,3 +88,5 @@ mergeHistory m (Rename m' h) = mergeHistory (Map.map (renameState m') m) h
 mergeHistory m (Minimize h) = mergeHistory m h
 mergeHistory m (Power h) = mergeHistory m h
 mergeHistory m (Product h1 h2) = mergeHistory m h1 -- TODO
+
+parseStateStructureMap m = (mergeHistory m) . parseStateHistory

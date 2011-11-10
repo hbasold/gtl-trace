@@ -6,20 +6,18 @@ import Language.Scade.Lexer
 import Language.Scade.Syntax (Declaration(UserOpDecl))
 import StateNameRecovery
 
-import Data.GraphViz.Types.Graph
-import Data.GraphViz
-import Data.GraphViz.Printing
-import Data.GraphViz.Types
-import Data.GraphViz.Attributes.Complete
+import Data.GraphViz (Labellable(..), GraphvizParams(..), defaultParams, nonClusteredParams, NodeCluster(..), toLabel, color, runGraphviz, graphToDot, GraphvizOutput(Svg))
+import Data.GraphViz.Types (GlobalAttributes(..))
+import Data.GraphViz.Attributes.Complete (Attribute(RankDir), RankDir(FromLeft), X11Color(Blue))
 
-import Data.Map as Map hiding (map)
+import Data.Map as Map ((!), insert, fromList)
 
-import qualified Data.Graph.Inductive.Graph as Gr
-import Data.Graph.Inductive.PatriciaTree
+import qualified Data.Graph.Inductive.Graph as Gr (Node, lab, nmap)
+import Data.Graph.Inductive.PatriciaTree (Gr)
 import Control.Arrow (first,second)
 
 import Data.Text.Lazy.IO as LText (writeFile)
-import Control.Monad
+import Control.Monad (foldM_, void)
 
 idMap = Map.fromList . (map duplicate)
   where duplicate x = (x, Simple $ NatLab x)
@@ -65,10 +63,7 @@ main = do
   stepsStr <- readFile "train-minimal-StrassenSignal_StrassenSignal-proof-counterex.out"
   let steps = relabelSteps $ parseScadeOutput stepsStr
   nameMapStr <- readFile "train-minimalStrassenSignal_StrassenSignal-statemap.txt"
-  let h = parseStateHistory nameMapStr
-  let sMap = mergeHistory (Map.insert (-1) (Simple $ StrLab "fail") $ idMap [0,1]) h
-  print h
-  print sMap
+  let sMap = parseStateStructureMap (Map.insert (-1) (Simple $ StrLab "fail") $ idMap [0,1]) nameMapStr
   case stateGraph of
     Just (sg,sm) ->
       let sgi = relabelGraph sg
