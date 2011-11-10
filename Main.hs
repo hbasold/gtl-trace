@@ -12,7 +12,7 @@ import Data.GraphViz.Attributes.Complete (Attribute(RankDir), RankDir(FromLeft),
 
 import Data.Map as Map ((!), insert, fromList)
 
-import qualified Data.Graph.Inductive.Graph as Gr (Node, lab, nmap)
+import qualified Data.Graph.Inductive.Graph as Gr (Node, lab, nmap, ufold)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 import Control.Arrow (first,second)
 
@@ -24,6 +24,9 @@ import System.FilePath (dropExtension, addExtension)
 idMap :: [Integer] -> StateStructureMap
 idMap = Map.fromList . (map duplicate)
   where duplicate x = (x, Simple $ NatLab x)
+
+makeBaseNodeStructureMap :: StateGraphI -> StateStructureMap
+makeBaseNodeStructureMap = (Map.insert (-1) (Simple $ StrLab "fail")) . idMap . filter (/= -1) . (Gr.ufold (\(_,_,(st,_),_) sts -> st:sts) [])
 
 -- Special structure required: states are named "sti", where i € Nat.
 parseNode :: String -> Integer
@@ -66,10 +69,10 @@ main = do
   stepsStr <- readFile $ file ++ "-proof-counterex.out"
   let steps = relabelSteps $ parseScadeOutput stepsStr
   nameMapStr <- readFile $ file ++ "-statemap.txt"
-  let sMap = parseStateStructureMap (Map.insert (-1) (Simple $ StrLab "fail") $ idMap [0,1,2]) nameMapStr
   case stateGraph of
     Just (sg,_) ->
       let sgi = relabelGraph sg
+          sMap = parseStateStructureMap (makeBaseNodeStructureMap sgi) nameMapStr
       in renderAll file opName sMap sgi steps
     Nothing -> print "No automaton found"
   where
