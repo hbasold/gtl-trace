@@ -16,7 +16,6 @@ import qualified Data.Graph.Inductive.Graph as Gr (Node, lab, nmap)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 import Control.Arrow (first,second)
 
-import Data.Text.Lazy.IO as LText (writeFile)
 import Control.Monad (foldM_, void)
 
 idMap = Map.fromList . (map duplicate)
