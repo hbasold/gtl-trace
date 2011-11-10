@@ -15,17 +15,15 @@ type NodeLabel = (String,Bool)
 type EdgeLabel = (Int,String)
 type StateGraph = Gr NodeLabel EdgeLabel
 
-makeStateGraph :: String -> DataDef -> Maybe (StateGraph, Map String Node)
-makeStateGraph name def =
+makeStateGraph :: DataDef -> Maybe (StateGraph, Map String Node)
+makeStateGraph def =
   let e:[] = dataEquations def
   in case e of
     StateEquation m _ _ -> Just $ stateGraph m
     _ -> Nothing
 
 stateGraph :: StateMachine -> (StateGraph, Map String Node)
-stateGraph (StateMachine name states) =
-  let cluster = undefined -- fmap (DotGr.Str . toLazyText . fromString) name
-  in foldl makeContext (Gr.empty, Map.empty) states
+stateGraph (StateMachine _ states) = foldl makeContext (Gr.empty, Map.empty) states
   where
     makeContext :: (StateGraph, Map String Node) -> State -> (StateGraph, Map String Node)
     makeContext (g,sm) s =
@@ -33,7 +31,7 @@ stateGraph (StateMachine name states) =
           transitions = stateUnless s -- only strong transitions supported
           (g', sm') = insertNode node g sm
           g'' = setInitial (sm'!node) (stateInitial s) g'
-      in (\(g,sm,_) -> (g,sm)) $ foldl (insertTransition $ sm' ! node) (g', sm', 1) transitions
+      in (\(x,y,_) -> (x,y)) $ foldl (insertTransition $ sm' ! node) (g'', sm', 1) transitions
 
     insertNode n g sm =
       if not (Map.member n sm) then
@@ -47,9 +45,10 @@ stateGraph (StateMachine name states) =
       in (insEdge (n, sm' ! target, (i,show $ prettyExpr 15 expr)) g', sm', i+1)
 
     getNode (TargetFork _ n) = n -- history ignored / conditional not supported
+    getNode _ = error "History and conditional not supported"
 
     setInitial n i g =
       if i then
-        let (Just (t, _, (l,_), f), r) = Gr.match n g
+        let (Just (t, _, (l,_), f), _) = Gr.match n g
         in (t, n, (l,True), f) & g
       else g

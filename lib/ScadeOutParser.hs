@@ -108,6 +108,7 @@ transition = (\t s n a -> if a then Just (s, n, t) else Nothing) <$>
     transNumber = pPacked (pSym '<') (pSym '>') pNatural
 
 data StepDataEntry a = Inp Input | Outp Output | St (State a) | Tr (Transition a) | NoEntry
+putEntry :: StepDataEntry a -> StepData a -> StepData a
 putEntry (Inp x) d = d { stepInputs = x : stepInputs d }
 putEntry (Outp x) d = d { stepOutputs = x : stepOutputs d }
 putEntry (St x) d = d { stepStates = x : stepStates d }
@@ -115,7 +116,7 @@ putEntry (Tr x) d = d { stepTransitions = x : stepTransitions d }
 putEntry NoEntry d = d
 
 step :: Parser RawStepData
-step = pSymbol "STEP" *> pNatural *> stepContent
+step = pSymbol "STEP" *> pNat *> stepContent
   where
     stepContent :: Parser RawStepData
     stepContent = pFoldr (putEntry, StepData [] [] [] []) stepEntry
@@ -126,6 +127,9 @@ step = pSymbol "STEP" *> pNatural *> stepContent
       <|> (Outp <$> output)
       <|> (maybe NoEntry St <$> state)
       <|> (maybe NoEntry Tr <$> transition)
+
+    pNat :: Parser Integer
+    pNat = pNatural
 
 steps :: Parser RawSteps
 steps = pList step

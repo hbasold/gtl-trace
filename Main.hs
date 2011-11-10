@@ -2,11 +2,11 @@ import ScadeStateGraph
 import ScadeOutParser as STrace
 
 import Language.Scade.Parser
-import Language.Scade.Lexer
+import Language.Scade.Lexer (alexScanTokens)
 import Language.Scade.Syntax (Declaration(UserOpDecl))
 import StateNameRecovery
 
-import Data.GraphViz (Labellable(..), GraphvizParams(..), defaultParams, nonClusteredParams, NodeCluster(..), toLabel, color, runGraphviz, graphToDot, GraphvizOutput(Svg))
+import Data.GraphViz (GraphvizParams(..), defaultParams, nonClusteredParams, NodeCluster(..), toLabel, color, runGraphviz, graphToDot, GraphvizOutput(Svg))
 import Data.GraphViz.Types (GlobalAttributes(..))
 import Data.GraphViz.Attributes.Complete (Attribute(RankDir), RankDir(FromLeft), X11Color(Blue))
 
@@ -18,6 +18,7 @@ import Control.Arrow (first,second)
 
 import Control.Monad (foldM_, void)
 
+idMap :: [Integer] -> StateStructureMap
 idMap = Map.fromList . (map duplicate)
   where duplicate x = (x, Simple $ NatLab x)
 
@@ -40,37 +41,35 @@ relabelSteps = map relabelStep
     relabelState = second parseNode
     first3 f (x1,x2,x3) = (f x1, x2, x3)
 
-instance Labellable State where
-  toLabelValue = toLabelValue . show
-
-renderParams :: StateStructureMap -> StateGraphI -> Int -> StepData Integer -> GraphvizParams Gr.Node NodeLabelI EdgeLabel String NodeLabelI
-renderParams m g i step = defaultParams {
+renderParams :: String -> StateStructureMap -> StateGraphI -> Int -> StepData Integer -> GraphvizParams Gr.Node NodeLabelI EdgeLabel String NodeLabelI
+renderParams op m g i step = defaultParams {
     globalAttributes = (GraphAttrs [RankDir FromLeft]) : globalAttributes nonClusteredParams
-    , clusterBy = \(n,nl) -> C ("Step " ++ show i) $ N (n,nl)
+    , clusterBy = \(n,nl) -> C (op ++ ": Step " ++ show i) $ N (n,nl)
     , fmtNode = \(_,(n,_)) -> highlightNode n ++ [toLabel (m!n)]
     , fmtEdge = \(f,_,(t,expr)) -> highlightTransition f t ++ [toLabel expr] }
   where
     -- TODO: respect path
     highlightNode n = if any (\(_,n') -> n == n') $ stepStates step then [color Blue] else []
-    highlightTransition f t = if any (\((_,s), i, _) -> (maybe False (s ==) (fmap fst $ Gr.lab g f)) && t == i) $ stepTransitions step then [color Blue] else []
+    highlightTransition f t = if any (\((_,s), t', _) -> (maybe False (s ==) (fmap fst $ Gr.lab g f)) && t == t') $ stepTransitions step then [color Blue] else []
 
+main :: IO ()
 main = do
   str <- readFile "train-minimal-StrassenSignal_StrassenSignal.scade"
   let decls = scade $ alexScanTokens str
   let (UserOpDecl _ _ _ opName _ _ _ _ opCont) = head decls
-  let stateGraph = makeStateGraph opName opCont
+  let stateGraph = makeStateGraph opCont
   stepsStr <- readFile "train-minimal-StrassenSignal_StrassenSignal-proof-counterex.out"
   let steps = relabelSteps $ parseScadeOutput stepsStr
   nameMapStr <- readFile "train-minimalStrassenSignal_StrassenSignal-statemap.txt"
-  let sMap = parseStateStructureMap (Map.insert (-1) (Simple $ StrLab "fail") $ idMap [0,1]) nameMapStr
+  let sMap = parseStateStructureMap (Map.insert (-1) (Simple $ StrLab "fail") $ idMap [0,1,2]) nameMapStr
   case stateGraph of
-    Just (sg,sm) ->
+    Just (sg,_) ->
       let sgi = relabelGraph sg
-      in renderAll sMap sgi steps
+      in renderAll opName sMap sgi steps
     Nothing -> print "No automaton found"
   where
-    renderAll sMap sg = foldM_ (\ i step -> do
-      let dotParams = renderParams sMap sg i step
+    renderAll op sMap sg = foldM_ (\ i step -> do
+      let dotParams = renderParams op sMap sg i step
       void $ runGraphviz (graphToDot dotParams sg) Svg ("train-minimal-StrassenSignal_StrassenSignal-" ++ show i ++ ".svg")
       return (i+1))
       1

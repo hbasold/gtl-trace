@@ -10,12 +10,14 @@ module StateNameRecovery (
 import Prelude hiding (foldl)
 import qualified Data.Map as Map (map)
 import Data.Map as Map hiding (null, map)
-import qualified Data.Set as Set (Set(..), toAscList, fromList, map)
-import Data.Foldable (foldl)
+import qualified Data.Set as Set (Set, toAscList, fromList, map)
+import Data.List (intercalate)
 
 import Text.ParserCombinators.UU as UU hiding (Steps)
 import Text.ParserCombinators.UU.Utils as UU (pSymbol, pParens, pBraces, pComma, lexeme, pParentheticalString, pNatural, runParser)
 import Text.ParserCombinators.UU.BasicInstances as UU (Parser)
+
+import Data.GraphViz (Labellable(..))
 
 data StateName = NatLab Integer | StrLab String deriving (Eq, Ord)
 data State =
@@ -33,8 +35,11 @@ instance Show State where
   show (ProductState s1 s2) = "(" ++ show s1 ++ "," ++ show s2 ++ ")"
   show (SetState sts) =
     let stL = Set.toAscList sts
-        str = if null stL then "" else foldl (\str s -> str ++ "," ++ show s) (show $ head stL) (tail stL)
+        str = if null stL then "" else (intercalate ",") $ map show stL
     in "{" ++ str ++ "}"
+
+instance Labellable State where
+  toLabelValue = toLabelValue . show
 
 data AutomatonHistory =
   NoHistory
@@ -78,15 +83,16 @@ parseStateHistory = runParser "history" historyP
 
 renameState :: Map.Map Integer State -> State -> State
 renameState m (Simple (NatLab s)) = m ! s
-renameState m s@(Simple (StrLab _)) = s -- not further renamable
+renameState _s s@(Simple (StrLab _)) = s -- not further renamable
 renameState m (ProductState s1 s2) = ProductState (renameState m s1) (renameState m s2)
 renameState m (SetState sts) = SetState $ Set.map (renameState m) sts
 
-mergeHistory :: Map.Map Integer State -> AutomatonHistory -> Map.Map Integer State
+mergeHistory :: StateStructureMap -> AutomatonHistory -> StateStructureMap
 mergeHistory m NoHistory = m
 mergeHistory m (Rename m' h) = mergeHistory (Map.map (renameState m') m) h
 mergeHistory m (Minimize h) = mergeHistory m h
 mergeHistory m (Power h) = mergeHistory m h
 mergeHistory m (Product h1 h2) = mergeHistory m h1 -- TODO
 
+parseStateStructureMap :: StateStructureMap -> String -> StateStructureMap
 parseStateStructureMap m = (mergeHistory m) . parseStateHistory
