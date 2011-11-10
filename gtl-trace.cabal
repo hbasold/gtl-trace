@@ -11,7 +11,7 @@ Executable gtl-trace
   default-language: Haskell2010
   Build-Depends: base,array,containers,uu-parsinglib,language-scade,fgl,graphviz,text
   Hs-Source-Dirs: . lib
-  GHC-Options: -Wall -fwarn-unused-imports -fwarn-incomplete-patterns
+  GHC-Options: -Wall
   other-modules:
     ScadeOutParser
     ScadeStateGraph
