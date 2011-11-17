@@ -12,7 +12,7 @@ import Data.GraphViz.Attributes.Complete (Attribute(RankDir), RankDir(FromLeft),
 
 import Data.Map as Map ((!), insert, fromList)
 
-import qualified Data.Graph.Inductive.Graph as Gr (Node, lab, nmap, ufold)
+import Data.Graph.Inductive.Graph as Gr (Node, lab, nmap, ufold, empty, (&), Context)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 import Control.Arrow (first,second)
 
@@ -58,6 +58,15 @@ renderParams op m g i step = defaultParams {
     highlightNode n = if any (\(_,n') -> n == n') $ stepStates step then [color Blue] else []
     highlightTransition f t = if any (\((_,s), t', _) -> (maybe False (s ==) (fmap fst $ Gr.lab g f)) && t == t') $ stepTransitions step then [color Blue] else []
 
+activeContext :: StepData Integer -> StateGraphI -> StateGraphI
+activeContext step = Gr.ufold (\context g -> if someActive context then context & g else g) Gr.empty
+  where
+    someActive :: Context NodeLabelI EdgeLabel -> Bool
+    someActive (i, _, (s, _), o) =
+          (any (\(_,s') -> s == s') $ stepStates step)
+          || any (\((t, _), _) -> any (\((_,s'), t', _) -> s == s' && t == t') $ stepTransitions step) i
+          || any (\((t, _), _) -> any (\((_,s'), t', _) -> s == s' && t == t') $ stepTransitions step) o
+
 main :: IO ()
 main = do
   (gtlFile:_) <- getArgs
@@ -72,12 +81,13 @@ main = do
   case stateGraph of
     Just (sg,_) ->
       let sgi = relabelGraph sg
-          sMap = parseStateStructureMap (makeBaseNodeStructureMap sgi) nameMapStr
-      in renderAll file opName sMap sgi steps
+          m0 = makeBaseNodeStructureMap sgi
+          sMap = addFailState $ parseStateStructureMap m0 nameMapStr
+      in print sMap >> renderAll file opName sMap sgi steps
     Nothing -> print "No automaton found"
   where
     renderAll file op sMap sg = foldM_ (\ i step -> do
       let dotParams = renderParams op sMap sg i step
-      void $ runGraphviz (graphToDot dotParams sg) Svg (file ++ show i ++ ".svg")
+      void $ runGraphviz (graphToDot dotParams $ activeContext step sg) Svg (file ++ show i ++ ".svg")
       return (i+1))
       1
