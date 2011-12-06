@@ -28,7 +28,7 @@ import Debug.Hood.Observe
 data StateName = NatLab Integer | StrLab String deriving (Eq, Ord)
 data State =
   Simple StateName
-  | ProductState State State
+  | ProductState [State]
   | SetState (Set.Set State)
   deriving (Eq,Ord)
 
@@ -38,7 +38,7 @@ instance Show StateName where
 
 instance Show State where
   show (Simple s) = show s
-  show (ProductState s1 s2) = "(" ++ show s1 ++ "," ++ show s2 ++ ")"
+  show (ProductState sts) = "(" ++ (intercalate "," $ map show sts) ++ ")"
   show (SetState sts) =
     let stL = Set.toAscList sts
         str = if null stL then "" else (intercalate ",") $ map show stL
@@ -95,7 +95,7 @@ pState = simpleState <|> productState <|> setState
     simpleState :: Parser State
     simpleState = Simple <$> ((NatLab <$> pNatural) <|> (StrLab <$> (lexeme $ pParentheticalString '%')))
     productState :: Parser State
-    productState = pParens $ ProductState <$> pState <*> (pComma *> (pState <??> pOptLevel))
+    productState = pParens $ (\s1 s2 -> ProductState [s1, s2]) <$> pState <*> (pComma *> (pState <??> pOptLevel))
     pOptLevel :: Parser (State -> State)
     pOptLevel = (const id) <$> pComma <* pBool
     setState :: Parser State
@@ -125,8 +125,27 @@ stateHistory NoHistory s = s
 stateHistory (Rename m h) (Simple s) = stateHistory h (renameState m s)
 stateHistory (Minimize h) (SetState s) = SetState $ Set.map (stateHistory h) s
 stateHistory (Power h) (SetState s) = SetState $ Set.map (stateHistory h) s
-stateHistory (Product h1 h2) (ProductState s1 s2) = ProductState (stateHistory h1 s1) (stateHistory h2 s2)
+stateHistory (Product h1 h2) (ProductState [s1, s2]) = ProductState [(stateHistory h1 s1), (stateHistory h2 s2)]
 stateHistory h s = error $ "Invalid combination of state type and history. State: " ++ (show s) ++ ", History: " ++ (show h)
 
+flattenProductState :: State -> State
+flattenProductState = (\sts -> case sts of {[s] -> s; _ -> ProductState sts}) . flattenProductState'
+  where
+    flattenProductState' :: State -> [State]
+    flattenProductState' (ProductState [s1, s2]) = (flattenProductState' s1) ++ (flattenProductState' s2)
+    flattenProductState' s@(Simple _) = [s]
+    flattenProductState' (SetState sts) = [SetState $ Set.map flattenProductState sts]
+    flattenProductState' (ProductState _) = error "invalid product state, should be pair after parsing"
+
+flattenTopSetState :: State -> State
+flattenTopSetState (SetState st) =
+  case Set.toAscList st of
+    [SetState sts] -> SetState sts
+    _ -> (SetState st)
+flattenTopSetState s = s
+
+flattenStates :: StateStructureMap -> StateStructureMap
+flattenStates = Map.map (flattenTopSetState . flattenProductState)
+
 parseStateStructureMap :: StateStructureMap -> String -> StateStructureMap
-parseStateStructureMap m = (mergeHistory m) . parseStateHistory
+parseStateStructureMap m = flattenStates . (mergeHistory m) . parseStateHistory
