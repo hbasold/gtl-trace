@@ -80,14 +80,6 @@ activeContext step sg = mkGraph (filter (activeNode sg) $ labNodes sg) (filter (
           || (any (\(_,s') -> src == s') $ stepStates step)
           -- || (any (\(_,s') -> tgt == s') $ stepStates step)
 
-
-m00 :: StateStructureMap
-m00 = Map.fromList [(-1, Simple $ StrLab "fail"),(0, Simple $ NatLab 0),(1, Simple $ NatLab 1),(2, Simple $ NatLab 2),(3, Simple $ NatLab 3),(4, Simple $ NatLab 4),(5, Simple $ NatLab 5),(6, Simple $ NatLab 6),(7, Simple $ NatLab 7),(8, Simple $ NatLab 8),(9, Simple $ NatLab 9),(10, Simple $ NatLab 10),(11, Simple $ NatLab 11),(12, Simple $ NatLab 12),(13, Simple $ NatLab 13),(14, Simple $ NatLab 14),(15, Simple $ NatLab 15),(16, Simple $ NatLab 16),(17, Simple $ NatLab 17),(18, Simple $ NatLab 18),(19, Simple $ NatLab 19),(20, Simple $ NatLab 20),(21, Simple $ NatLab 21),(22, Simple $ NatLab 22),(23, Simple $ NatLab 23),(24, Simple $ NatLab 24),(25, Simple $ NatLab 25),(26, Simple $ NatLab 26),(27, Simple $ NatLab 27),(28, Simple $ NatLab 28),(29, Simple $ NatLab 29),(30, Simple $ NatLab 30),(31, Simple $ NatLab 31),(32, Simple $ NatLab 32),(33, Simple $ NatLab 33),(34, Simple $ NatLab 34),(35, Simple $ NatLab 35),(36, Simple $ NatLab 36),(37, Simple $ NatLab 37),(38, Simple $ NatLab 38),(39, Simple $ NatLab 39),(40, Simple $ NatLab 40),(41, Simple $ NatLab 41),(42, Simple $ NatLab 42),(43, Simple $ NatLab 43),(44, Simple $ NatLab 44),(45, Simple $ NatLab 45),(46, Simple $ NatLab 46),(47, Simple $ NatLab 47)]
-p0 :: IO()
-p0 = do
-  s <- readFile "train-minimal-StrassenSignal_StrassenSignal-statemap.txt"
-  print $ parseStateStructureMap m00 s
-
 main :: IO ()
 main = runO $ do
 -- main = do
