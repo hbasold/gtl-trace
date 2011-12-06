@@ -12,7 +12,7 @@ import Data.GraphViz.Attributes.Complete (Attribute(RankDir), RankDir(FromLeft),
 
 import Data.Map as Map ((!), insert, fromList)
 
-import Data.Graph.Inductive.Graph as Gr (Node, lab, nmap, ufold, empty, (&), Context)
+import Data.Graph.Inductive.Graph as Gr (Node, lab, nmap, ufold, mkGraph, labNodes, labEdges, LNode, LEdge, out, inn)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 import Control.Arrow (first,second)
 
@@ -64,13 +64,21 @@ renderParams op m g i step = defaultParams {
     highlightTransition f t = if any (\((_,s), t', _) -> (maybe False (s ==) (fmap fst $ Gr.lab g f)) && t == t') $ stepTransitions step then [color Blue] else []
 
 activeContext :: StepData Integer -> StateGraphI -> StateGraphI
-activeContext step = Gr.ufold (\context g -> if someActive context then context & g else g) Gr.empty
+activeContext step sg = mkGraph (filter (activeNode sg) $ labNodes sg) (filter (activeEdge sg) $ labEdges sg)
   where
-    someActive :: Context NodeLabelI EdgeLabel -> Bool
-    someActive (i, _, (s, _), o) =
-          (any (\(_,s') -> s == s') $ stepStates step)
-          || any (\((t, _), _) -> any (\((_,s'), t', _) -> s == s' && t == t') $ stepTransitions step) i
-          || any (\((t, _), _) -> any (\((_,s'), t', _) -> s == s' && t == t') $ stepTransitions step) o
+    activeNode :: StateGraphI -> LNode NodeLabelI -> Bool
+    activeNode g (n, (s, _)) =
+      (any (\(_,s') -> s == s') $ stepStates step)
+      || any (activeEdge g) (out g n)
+      || any (activeEdge g) (inn g n)
+
+    activeEdge :: StateGraphI -> LEdge EdgeLabel -> Bool
+    activeEdge g (sState, _ {-tState-}, (tNum, _)) =
+      let (Just (src, _)) = lab g sState
+          -- (Just (tgt, _)) = lab g tState
+      in any (\((_,s'), t', _) -> src == s' && tNum == t') (stepTransitions step)
+          || (any (\(_,s') -> src == s') $ stepStates step)
+          -- || (any (\(_,s') -> tgt == s') $ stepStates step)
 
 
 m00 :: StateStructureMap
