@@ -26,7 +26,10 @@ idMap = Map.fromList . (map duplicate)
   where duplicate x = (x, Simple $ NatLab x)
 
 makeBaseNodeStructureMap :: StateGraphI -> StateStructureMap
-makeBaseNodeStructureMap = (Map.insert (-1) (Simple $ StrLab "fail")) . idMap . filter (/= -1) . (Gr.ufold (\(_,_,(st,_),_) sts -> st:sts) [])
+makeBaseNodeStructureMap = idMap . filter (/= -1) . (Gr.ufold (\(_,_,(st,_),_) sts -> st:sts) [])
+
+addFailState :: StateStructureMap -> StateStructureMap
+addFailState = Map.insert (-1) (Simple $ StrLab "fail")
 
 -- Special structure required: states are named "sti", where i € Nat.
 parseNode :: String -> Integer
@@ -87,7 +90,9 @@ main = do
     Nothing -> print "No automaton found"
   where
     renderAll file op sMap sg = foldM_ (\ i step -> do
-      let dotParams = renderParams op sMap sg i step
-      void $ runGraphviz (graphToDot dotParams $ activeContext step sg) Svg (file ++ show i ++ ".svg")
+      let contextSg = activeContext step sg
+      print $ labNodes contextSg
+      let dotParams = renderParams op sMap contextSg i step
+      void $ runGraphviz (graphToDot dotParams $ contextSg) Svg (file ++ show i ++ ".svg")
       return (i+1))
       1
