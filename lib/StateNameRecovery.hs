@@ -20,6 +20,9 @@ import Text.ParserCombinators.UU.BasicInstances as UU (Parser)
 
 import Data.GraphViz (Labellable(..))
 
+import Debug.Hood.Observe
+--import Debug.Trace.LocationTH
+
 data StateName = NatLab Integer | StrLab String deriving (Eq, Ord)
 data State =
   Simple StateName
@@ -53,6 +56,12 @@ data AutomatonHistory =
   deriving Show
 
 type StateStructureMap = Map.Map Integer State
+
+instance Observable AutomatonHistory where
+  observer = observeBase
+
+instance (Show a, Show b) => Observable (Map a b) where
+  observer = observeBase
 
 pBool :: Parser Bool
 pBool = (const True) <$> pSymbol "True" <|> (const False) <$> pSymbol "False"
