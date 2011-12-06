@@ -24,7 +24,6 @@ import Data.GraphViz.Attributes.HTML
 import Data.Text.Lazy (pack)
 
 import Debug.Hood.Observe
---import Debug.Trace.LocationTH
 
 data StateName = NatLab Integer | StrLab String deriving (Eq, Ord)
 data State =
