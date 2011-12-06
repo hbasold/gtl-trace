@@ -41,9 +41,11 @@ instance Show State where
 instance Labellable State where
   toLabelValue = toLabelValue . show
 
+type HistoryStateMap = Map.Map Integer State
+
 data AutomatonHistory =
   NoHistory
-  | Rename (Map.Map Integer State) AutomatonHistory
+  | Rename HistoryStateMap AutomatonHistory
   | Minimize AutomatonHistory
   | Power AutomatonHistory
   | Product AutomatonHistory AutomatonHistory
@@ -51,8 +53,11 @@ data AutomatonHistory =
 
 type StateStructureMap = Map.Map Integer State
 
+pBool :: Parser Bool
+pBool = (const True) <$> pSymbol "True" <|> (const False) <$> pSymbol "False"
+
 historyP :: Parser AutomatonHistory
-historyP = noHistoryP <|> renameP <|> minimizeP <|> powerP
+historyP = noHistoryP <|> renameP <|> minimizeP <|> powerP <|> pProduct
 
 noHistoryP :: Parser AutomatonHistory
 noHistoryP = (const NoHistory) <$> pSymbol "none"
@@ -63,20 +68,29 @@ minimizeP = Minimize <$> (pSymbol "minimize" *> (pParens historyP))
 powerP :: Parser AutomatonHistory
 powerP = Power <$> (pSymbol "power" *> (pParens historyP))
 
+pProduct :: Parser AutomatonHistory
+pProduct = pSymbol "product" *> (pParens $ Product <$> historyP <*> (pComma *> historyP))
+
+pState :: Parser State
+pState = simpleState <|> productState <|> setState
+  where
+    simpleState :: Parser State
+    simpleState = Simple <$> ((NatLab <$> pNatural) <|> (StrLab <$> (lexeme $ pParentheticalString '%')))
+    productState :: Parser State
+    productState = pParens $ ProductState <$> pState <*> (pComma *> (pState <??> pOptLevel))
+    pOptLevel :: Parser (State -> State)
+    pOptLevel = (const id) <$> pComma <* pBool
+    setState :: Parser State
+    setState = (SetState . Set.fromList) <$> pBraces (pListSep pComma pState)
+
 renameP :: Parser AutomatonHistory
 renameP = pSymbol "rename" *> pParens renameCont
   where
     renameCont = (flip Rename) <$> historyP <*> (pSymbol "," *> renameMapP)
-    renameMapP :: Parser (Map.Map Integer State)
+    renameMapP :: Parser HistoryStateMap
     renameMapP = Map.fromList <$> pBraces (pListSep pComma mapEntry)
-    mapEntry :: Parser (Integer,State)
-    mapEntry = (flip (,)) <$> state <*> (pSymbol "->" *> pNatural) -- mapping is expected to be a bijection
-    state :: Parser State
-    state = setState <|> simpleState
-    simpleState :: Parser State
-    simpleState = Simple <$> ((NatLab <$> pNatural) <|> (StrLab <$> (lexeme $ pParentheticalString '%')))
-    setState :: Parser State
-    setState = (SetState . Set.fromList) <$> pBraces (pListSep pComma state)
+    mapEntry :: Parser (Integer, State)
+    mapEntry = (flip (,)) <$> pState <*> (pSymbol "->" *> pNatural) -- mapping is expected to be a bijection
 
 parseStateHistory :: String -> AutomatonHistory
 parseStateHistory = runParser "history" historyP
