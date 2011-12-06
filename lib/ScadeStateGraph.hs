@@ -11,8 +11,8 @@ import Data.Graph.Inductive.Graph as Gr (Node, empty, newNodes, insNode, insEdge
 import Data.Graph.Inductive.PatriciaTree (Gr)
 import Data.Map as Map hiding (map, union)
 
-type NodeLabel = (String,Bool)
-type EdgeLabel = (Int,String)
+type NodeLabel = (String,Bool) -- ^ Node labels contain the state name (from Scade) and the information if the state is initial
+type EdgeLabel = (Int,String) -- ^ Automata edge label contain transition number (from Scade) and condition
 type StateGraph = Gr NodeLabel EdgeLabel
 
 makeStateGraph :: DataDef -> Maybe (StateGraph, Map String Node)
