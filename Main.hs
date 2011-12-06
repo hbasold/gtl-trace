@@ -6,9 +6,9 @@ import Language.Scade.Lexer (alexScanTokens)
 import Language.Scade.Syntax (Declaration(UserOpDecl))
 import StateNameRecovery
 
-import Data.GraphViz (GraphvizParams(..), defaultParams, nonClusteredParams, NodeCluster(..), toLabel, color, runGraphviz, graphToDot, GraphvizOutput(Svg))
+import Data.GraphViz (GraphvizParams(..), defaultParams, nonClusteredParams, NodeCluster(..), toLabel, color, shape, runGraphviz, graphToDot, GraphvizOutput(Svg))
 import Data.GraphViz.Types (GlobalAttributes(..))
-import Data.GraphViz.Attributes.Complete (Attribute(RankDir), RankDir(FromLeft), X11Color(Blue))
+import Data.GraphViz.Attributes.Complete (Attribute(RankDir), RankDir(FromLeft), X11Color(Blue), Shape(Ellipse, PlainText))
 
 import Data.Map as Map ((!), insert, fromList)
 
@@ -56,11 +56,12 @@ renderParams :: String -> StateStructureMap -> StateGraphI -> Int -> StepData In
 renderParams op m g i step = defaultParams {
     globalAttributes = (GraphAttrs [RankDir FromLeft]) : globalAttributes nonClusteredParams
     , clusterBy = \(n,nl) -> C (op ++ ": Step " ++ show i) $ N (n,nl)
-    , fmtNode = \(_,(n,_)) -> highlightNode n ++ [toLabel (m!n)]
+    , fmtNode = \(_,(n,_)) -> (nodeShape n) ++ highlightNode n ++ [toLabel (m!n)]
     , fmtEdge = \(f,_,(t,expr)) -> highlightTransition f t ++ [toLabel expr] }
   where
     -- TODO: respect path
     highlightNode n = if any (\(_,n') -> n == n') $ stepStates step then [color Blue] else []
+    nodeShape n = if n == -1 then [shape Ellipse] else [shape PlainText]
     highlightTransition f t = if any (\((_,s), t', _) -> (maybe False (s ==) (fmap fst $ Gr.lab g f)) && t == t') $ stepTransitions step then [color Blue] else []
 
 activeContext :: StepData Integer -> StateGraphI -> StateGraphI

@@ -34,7 +34,7 @@ data State =
 
 instance Show StateName where
   show (NatLab i) = show i
-  show (StrLab s) = show s
+  show (StrLab s) = s
 
 instance Show State where
   show (Simple s) = show s
@@ -50,8 +50,8 @@ instance Labellable State where
 
 stateHtmlLabel :: State -> HtmlLabel
 stateHtmlLabel (Simple s) = HtmlText [HtmlStr $ pack $ show s]
-stateHtmlLabel (ProductState s1 s2) = HtmlTable $ HTable Nothing [] [HtmlRow [HtmlLabelCell [] $ stateHtmlLabel s1], HtmlRow [HtmlLabelCell [] $ stateHtmlLabel s2]]
-stateHtmlLabel (SetState sts) = HtmlTable $ HTable Nothing [] [HtmlRow $ foldl (\cells s -> (HtmlLabelCell [] $ stateHtmlLabel s) : cells) [] sts]
+stateHtmlLabel (ProductState sts) = HtmlTable $ HTable Nothing [HtmlBorder 0, HtmlCellPadding 5] $ map (\s -> HtmlRow [HtmlLabelCell [HtmlBorder 1] $ stateHtmlLabel s]) sts
+stateHtmlLabel (SetState sts) = HtmlTable $ HTable Nothing [HtmlBorder 0, HtmlCellPadding 5] [HtmlRow $ foldl (\cells s -> (HtmlLabelCell [HtmlBorder 1] $ stateHtmlLabel s) : cells) [] sts]
 
 type HistoryStateMap = Map.Map Integer State
 
