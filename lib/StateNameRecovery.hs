@@ -19,6 +19,9 @@ import Text.ParserCombinators.UU.Utils as UU (pSymbol, pParens, pBraces, pComma,
 import Text.ParserCombinators.UU.BasicInstances as UU (Parser)
 
 import Data.GraphViz (Labellable(..))
+import Data.GraphViz.Attributes.Complete (Label(HtmlLabel))
+import Data.GraphViz.Attributes.HTML
+import Data.Text.Lazy (pack)
 
 import Debug.Hood.Observe
 --import Debug.Trace.LocationTH
@@ -43,7 +46,13 @@ instance Show State where
     in "{" ++ str ++ "}"
 
 instance Labellable State where
-  toLabelValue = toLabelValue . show
+  toLabelValue s = HtmlLabel $ stateHtmlLabel s
+
+
+stateHtmlLabel :: State -> HtmlLabel
+stateHtmlLabel (Simple s) = HtmlText [HtmlStr $ pack $ show s]
+stateHtmlLabel (ProductState s1 s2) = HtmlTable $ HTable Nothing [] [HtmlRow [HtmlLabelCell [] $ stateHtmlLabel s1], HtmlRow [HtmlLabelCell [] $ stateHtmlLabel s1]]
+stateHtmlLabel (SetState sts) = HtmlTable $ HTable Nothing [] [HtmlRow $ foldl (\cells s -> (HtmlLabelCell [] $ stateHtmlLabel s) : cells) [] sts]
 
 type HistoryStateMap = Map.Map Integer State
 
